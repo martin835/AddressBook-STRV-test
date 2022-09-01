@@ -1,7 +1,7 @@
 import cors from "cors";
 import express from "express";
 import usersRouter from "./services/routers/users-router.js";
-import contactsRouter from "./services/routers/contacts-router.js";
+
 import morgan from "morgan";
 import {
   badRequestHandler,
@@ -31,7 +31,6 @@ app.use(morgan("combined"));
 //***********************************Endpoints*********************************************************/
 
 app.use("/users", usersRouter);
-app.use("/contacts", contactsRouter);
 
 // For test purposes
 

@@ -3,36 +3,36 @@ import createError from "http-errors";
 import { JWTAuthMiddleware } from "../../auth/JWTMiddleware.js";
 import { generateAccessToken } from "../../auth/tools.js";
 //import { sendRegistrationEmail } from "../../tools/email-tools.js";
+import { addDoc, collection, doc, setDoc } from "firebase/firestore";
+import { database } from "../../../config.js";
 import UserModel from "../models/user-model.js";
-import { doc, setDoc, addDoc } from "firebase/firestore";
-import { database, contacts } from "../../../config.js";
 
 const usersRouter = express.Router();
 
 //Endpoint only for testing purposes - delete in prod.
-usersRouter.get("/", async (req, res, next) => {
-  console.log("📨 PING - GET REQUEST");
-  try {
-    const users = await UserModel.find({});
+// usersRouter.get("/", async (req, res, next) => {
+//   console.log("📨 PING - GET REQUEST");
+//   try {
+//     const users = await UserModel.find({});
 
-    res.send(users);
-  } catch (error) {
-    next(error);
-  }
-});
+//     res.send(users);
+//   } catch (error) {
+//     next(error);
+//   }
+// });
 
 //TEST Creating new user
-usersRouter.post("/", async (req, res, next) => {
-  try {
-    //1. Create new user in MongoDB
-    const newUser = new UserModel(req.body);
-    const { _id } = await newUser.save();
+// usersRouter.post("/", async (req, res, next) => {
+//   try {
+//     //1. Create new user in MongoDB
+//     const newUser = new UserModel(req.body);
+//     const { _id } = await newUser.save();
 
-    res.status(201).send({ _id });
-  } catch (error) {
-    next(error);
-  }
-});
+//     res.status(201).send({ _id });
+//   } catch (error) {
+//     next(error);
+//   }
+// });
 
 usersRouter.get("/me", JWTAuthMiddleware, async (req, res, next) => {
   try {
@@ -86,17 +86,40 @@ usersRouter.post("/register", async (req, res, next) => {
       _id: _id,
     });
 
-    //2. Create document with user's ID in Firebase -> it will be initially empty contact list
+    //3. Create collection  with user's ID in Firebase and document "contacts" -> it will be initially empty contact list
     const userId = _id.toString();
+    await setDoc(doc(database, userId, userId), {});
 
-    // await addDoc(Contacts, { id: userId });
-    await setDoc(doc(database, userId, "contacts"), {});
-
-    // 3 Send access token and _id in the response
+    // 4. Send access token and _id in the response
     res.status(201).send({ accessToken, _id });
   } catch (error) {
     next(error);
   }
 });
+
+usersRouter.post(
+  "/me/add-contact",
+  JWTAuthMiddleware,
+  async (req, res, next) => {
+    try {
+      const user = await UserModel.findById(req.user._id);
+      if (user) {
+        //If user exists in mongo  -> add contact to collection in firestore
+        //ToDo - add check to see if collection / document exists in Firestore
+        const { id } = await addDoc(
+          collection(database, req.user._id),
+          req.body
+        );
+        res.status(201).send({
+          msg: `Contact with id: ${id} has been added to the contact list`,
+        });
+      } else {
+        next(createError(401, `User with id ${req.user._id} not found!`));
+      }
+    } catch (error) {
+      next(error);
+    }
+  }
+);
 
 export default usersRouter;

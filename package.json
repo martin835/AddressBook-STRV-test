@@ -30,6 +30,7 @@
     "http-errors": "^2.0.0",
     "jsonwebtoken": "^8.5.1",
     "mongoose": "^6.5.4",
+    "morgan": "^1.10.0",
     "query-to-mongo": "^0.10.2"
   },
   "devDependencies": {

@@ -4,9 +4,12 @@ import { JWTAuthMiddleware } from "../../auth/JWTMiddleware.js";
 import { generateAccessToken } from "../../auth/tools.js";
 //import { sendRegistrationEmail } from "../../tools/email-tools.js";
 import UserModel from "../models/user-model.js";
+import { doc, setDoc, addDoc } from "firebase/firestore";
+import { database, contacts } from "../../../config.js";
 
 const usersRouter = express.Router();
 
+//Endpoint only for testing purposes - delete in prod.
 usersRouter.get("/", async (req, res, next) => {
   console.log("📨 PING - GET REQUEST");
   try {
@@ -18,11 +21,13 @@ usersRouter.get("/", async (req, res, next) => {
   }
 });
 
+//TEST Creating new user
 usersRouter.post("/", async (req, res, next) => {
-  console.log("📨 PING - POST REQUEST");
   try {
+    //1. Create new user in MongoDB
     const newUser = new UserModel(req.body);
     const { _id } = await newUser.save();
+
     res.status(201).send({ _id });
   } catch (error) {
     next(error);
@@ -67,7 +72,7 @@ usersRouter.post("/login", async (req, res, next) => {
 usersRouter.post("/register", async (req, res, next) => {
   //console.log(req.body);
   try {
-    //1 - create a new user in DB, verification status =  verified:false (default)
+    //1 - create a new user in DB
     const newUser = new UserModel({
       ...req.body,
     });
@@ -80,6 +85,13 @@ usersRouter.post("/register", async (req, res, next) => {
     const accessToken = await generateAccessToken({
       _id: _id,
     });
+
+    //2. Create document with user's ID in Firebase -> it will be initially empty contact list
+    const userId = _id.toString();
+
+    // await addDoc(Contacts, { id: userId });
+    await setDoc(doc(database, userId, "contacts"), {});
+
     // 3 Send access token and _id in the response
     res.status(201).send({ accessToken, _id });
   } catch (error) {

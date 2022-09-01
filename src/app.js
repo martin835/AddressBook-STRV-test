@@ -1,6 +1,7 @@
 import cors from "cors";
 import express from "express";
 import usersRouter from "./services/routers/users-router.js";
+import contactsRouter from "./services/routers/contacts-router.js";
 import {
   badRequestHandler,
   forbiddenHandler,
@@ -28,6 +29,7 @@ app.use(express.json());
 //***********************************Endpoints*********************************************************/
 
 app.use("/users", usersRouter);
+app.use("/contacts", contactsRouter);
 
 // For test purposes
 

@@ -91,7 +91,7 @@ usersRouter.post("/register", async (req, res, next) => {
 
     //method used w/o admin SKD:
     //await setDoc(doc(database, userId, userId), {});
-    //method used with admin SKD:
+    //method used with admin SKD:  https://retool.com/blog/crud-with-cloud-firestore-using-the-nodejs-sdk/
     const newCollection = database.collection(userId);
     const newDocument = newCollection.doc(userId);
     await newDocument.set({});
@@ -119,7 +119,7 @@ usersRouter.post(
         //   req.body
         // );
 
-        //method used with admin SKD:
+        //method used with admin SKD: https://retool.com/blog/crud-with-cloud-firestore-using-the-nodejs-sdk/
         const myCollection = database.collection(req.user._id);
         await myCollection.doc().set(req.body);
 

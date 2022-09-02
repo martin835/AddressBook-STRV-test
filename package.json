@@ -5,7 +5,8 @@
   "main": "server.js",
   "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "cross-env NODE_OPTIONS=--experimental-vm-modules jest",
+    "watch": "cross-env NODE_OPTIONS=--experimental-vm-modules jest --watchAll",
     "dev": "nodemon -r dotenv/config ./src/server.js",
     "start": "node ./src/server.js"
   },
@@ -35,7 +36,10 @@
     "query-to-mongo": "^0.10.2"
   },
   "devDependencies": {
+    "cross-env": "^7.0.3",
     "dotenv": "^16.0.2",
-    "nodemon": "^2.0.19"
+    "jest": "^29.0.1",
+    "nodemon": "^2.0.19",
+    "supertest": "^6.2.4"
   }
 }

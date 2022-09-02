@@ -1,21 +1,22 @@
 //***********CONFIG WITH ADMIN SDK ********************* */
 
 import { getFirestore } from "firebase-admin/firestore";
+//import admin from "firebase-admin";
 import { initializeApp, applicationDefault, cert } from "firebase-admin/app";
 
 //For default creadentials this env varialbe was needed GOOGLE_APPLICATION_CREDENTIALS="C:PATH-TO\key.json" together with key.JSON file,
 //but it probably wouldn't work on Heroku
-// const app = initializeApp({
-//   credential: applicationDefault(),
-// });
-
 const app = initializeApp({
-  credential: cert({
-    projectId: process.env.FIREBASE_PROJECT_ID,
-    clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-    privateKey: process.env.FIREBASE_PRIVATE_KEY,
-  }),
+  credential: applicationDefault(),
 });
+
+// const app = initializeApp({
+//   credential: cert({
+//     projectId: process.env.FIREBASE_PROJECT_ID,
+//     clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+//     privateKey: process.env.FIREBASE_PRIVATE_KEY,
+//   }),
+// });
 
 export const database = getFirestore(app);
 

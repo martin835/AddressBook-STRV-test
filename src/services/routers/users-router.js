@@ -2,7 +2,7 @@ import express from "express";
 import createError from "http-errors";
 import { JWTAuthMiddleware } from "../../auth/JWTMiddleware.js";
 import { generateAccessToken } from "../../auth/tools.js";
-//import { sendRegistrationEmail } from "../../tools/email-tools.js";
+
 import { addDoc, collection, doc, setDoc } from "firebase/firestore";
 import { database } from "../../../config.js";
 import UserModel from "../models/user-model.js";
@@ -88,7 +88,13 @@ usersRouter.post("/register", async (req, res, next) => {
 
     //3. Create collection  with user's ID in Firebase and document "contacts" -> it will be initially empty contact list
     const userId = _id.toString();
-    await setDoc(doc(database, userId, userId), {});
+
+    //method used w/o admin SKD:
+    //await setDoc(doc(database, userId, userId), {});
+    //method used with admin SKD:
+    const newCollection = database.collection(userId);
+    const newDocument = newCollection.doc(userId);
+    await newDocument.set({});
 
     // 4. Send access token and _id in the response
     res.status(201).send({ accessToken, _id });
@@ -106,12 +112,19 @@ usersRouter.post(
       if (user) {
         //If user exists in mongo  -> add contact to collection in firestore
         //ToDo - add check to see if collection / document exists in Firestore
-        const { id } = await addDoc(
-          collection(database, req.user._id),
-          req.body
-        );
+
+        //method used w/o admin SKD:
+        // const { id } = await addDoc(
+        //   collection(database, req.user._id),
+        //   req.body
+        // );
+
+        //method used with admin SKD:
+        const myCollection = database.collection(req.user._id);
+        await myCollection.doc().set(req.body);
+
         res.status(201).send({
-          msg: `Contact with id: ${id} has been added to the contact list`,
+          msg: `Contact has been added to the contact list`,
         });
       } else {
         next(createError(401, `User with id ${req.user._id} not found!`));

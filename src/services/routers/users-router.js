@@ -2,10 +2,12 @@ import express from "express";
 import createError from "http-errors";
 import { JWTAuthMiddleware } from "../../auth/JWTMiddleware.js";
 import { generateAccessToken } from "../../auth/tools.js";
-
+import { validationResult } from "express-validator/src/validation-result.js";
 import { addDoc, collection, doc, setDoc } from "firebase/firestore";
 import { database } from "../../../config.js";
 import UserModel from "../models/user-model.js";
+import { firestoreContactValidation } from "../../middlewares/validations.js";
+import createHttpError from "http-errors";
 
 const usersRouter = express.Router();
 
@@ -106,28 +108,39 @@ usersRouter.post("/register", async (req, res, next) => {
 usersRouter.post(
   "/me/add-contact",
   JWTAuthMiddleware,
+  firestoreContactValidation,
   async (req, res, next) => {
     try {
-      const user = await UserModel.findById(req.user._id);
-      if (user) {
-        //If user exists in mongo  -> add contact to collection in firestore
-        //ToDo - add check to see if collection / document exists in Firestore
+      const errorsList = validationResult(req);
 
-        //method used w/o admin SKD:
-        // const { id } = await addDoc(
-        //   collection(database, req.user._id),
-        //   req.body
-        // );
+      if (errorsList.isEmpty()) {
+        const user = await UserModel.findById(req.user._id);
+        if (user) {
+          //If user exists in mongo  -> add contact to collection in firestore
+          //ToDo - add check to see if collection / document exists in Firestore
 
-        //method used with admin SKD: https://retool.com/blog/crud-with-cloud-firestore-using-the-nodejs-sdk/
-        const myCollection = database.collection(req.user._id);
-        await myCollection.doc().set(req.body);
+          //method used w/o admin SKD:
+          // const { id } = await addDoc(
+          //   collection(database, req.user._id),
+          //   req.body
+          // );
 
-        res.status(201).send({
-          msg: `Contact has been added to the contact list`,
-        });
+          //method used with admin SKD: https://retool.com/blog/crud-with-cloud-firestore-using-the-nodejs-sdk/
+          const myCollection = database.collection(req.user._id);
+          await myCollection.doc().set(req.body);
+
+          res.status(201).send({
+            msg: `Contact has been added to the contact list`,
+          });
+        } else {
+          next(createError(401, `User with id ${req.user._id} not found!`));
+        }
       } else {
-        next(createError(401, `User with id ${req.user._id} not found!`));
+        next(
+          createHttpError(400, "Something wrong is with the request body", {
+            errorsList,
+          })
+        );
       }
     } catch (error) {
       next(error);

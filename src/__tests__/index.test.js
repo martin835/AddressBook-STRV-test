@@ -18,6 +18,15 @@ describe("Testing the enviroment", () => {
     console.log("🧪 After all");
     await mongoose.connection.dropDatabase();
     await mongoose.connection.close();
+    console.log(
+      " ⚠️⚠️⚠️ IMPORTANT - DELETE TEST DATA FROM FIRESTORE DB - THESE DATA ARE CREATED AFTER EVERY TEST"
+    );
+    console.log(
+      " ⚠️⚠️⚠️ IMPORTANT - DELETE TEST DATA FROM FIRESTORE DB - THESE DATA ARE CREATED AFTER EVERY TEST"
+    );
+    console.log(
+      " ⚠️⚠️⚠️ IMPORTANT - DELETE TEST DATA FROM FIRESTORE DB - THESE DATA ARE CREATED AFTER EVERY TEST"
+    );
   });
 
   test("simple check", () => {
@@ -104,6 +113,7 @@ describe("Testing the enviroment", () => {
     surname: "Doe",
     phoneNumber: "+421515135132",
     address: "42 Lexington Ave, NY, NY",
+    userId: "test",
   };
 
   it("Should log me in with valid JWT and add new contact to firestore DB", async () => {

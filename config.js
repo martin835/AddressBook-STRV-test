@@ -14,11 +14,13 @@ import { initializeApp, applicationDefault, cert } from "firebase-admin/app";
 // });
 
 //WHEN TESTING - COMMENT OUT:
+
+const { privateKey } = JSON.parse(process.env.FIREBASE_PRIVATE_KEY);
 const app = initializeApp({
   credential: cert({
     projectId: process.env.FIREBASE_PROJECT_ID,
     clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-    privateKey: process.env.FIREBASE_PRIVATE_KEY,
+    privateKey: privateKey,
   }),
 });
 

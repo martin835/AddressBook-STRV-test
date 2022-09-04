@@ -127,7 +127,17 @@ usersRouter.post(
 
           //method used with admin SKD: https://retool.com/blog/crud-with-cloud-firestore-using-the-nodejs-sdk/
           const myCollection = database.collection(req.user._id);
-          await myCollection.doc().set(req.body);
+
+          const newContact = {
+            firstName: req.body.firstName, //required field
+            lastName: req.body.lastName ? req.body.lastName : null,
+            phoneNumber: req.body.phoneNumber ? req.body.phoneNumber : null,
+            email: req.body.email ? req.body.email : null,
+            address: req.body.address ? req.body.address : null,
+            userId: req.user._id, //this is coming from jwt middleware
+          };
+
+          await myCollection.doc().set(newContact);
 
           res.status(201).send({
             msg: `Contact has been added to the contact list`,

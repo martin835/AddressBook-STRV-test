@@ -1,6 +1,12 @@
 import { body } from "express-validator";
 
 export const firestoreContactValidation = [
-  body("name").exists().withMessage("Name is a mandatory field"),
-  body("userId").exists().withMessage("userId is mandatory to save a contact"),
+  body("firstName")
+    .exists()
+    .isString()
+    .withMessage("Name is a mandatory field"),
+  body("email").isEmail().optional(),
+  body("address").isString().optional(),
+  body("phoneNumber").isMobilePhone().optional(),
+  body("lastName").isString().optional(),
 ];

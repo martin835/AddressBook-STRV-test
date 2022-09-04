@@ -42,6 +42,7 @@ describe("Testing the enviroment", () => {
     name: "John",
     surname: "Doe",
     email: "john.doe@gmail.com",
+    phoneNumber: "+431213125324",
     password: "1234asdf",
   };
 
@@ -109,11 +110,11 @@ describe("Testing the enviroment", () => {
   });
 
   let newContact = {
-    name: "Jane",
-    surname: "Doe",
+    firstName: "Jane",
+    lastName: "Doe",
     phoneNumber: "+421515135132",
     address: "42 Lexington Ave, NY, NY",
-    userId: "test",
+    extra: "I should not pass into DB",
   };
 
   it("Should log me in with valid JWT and add new contact to firestore DB", async () => {
@@ -124,7 +125,7 @@ describe("Testing the enviroment", () => {
     const response = await client
       .post("/users/me/add-contact")
       .set("Authorization", `Bearer ${validToken}`)
-      .send({ ...newContact, test: true });
+      .send(newContact);
 
     expect(response.status).toBe(201);
   });

@@ -10,3 +10,10 @@ export const firestoreContactValidation = [
   body("phoneNumber").isMobilePhone().optional(),
   body("lastName").isString().optional(),
 ];
+
+export const newUserValidation = [
+  body("name").isString().optional(),
+  body("surname").isString().optional(),
+  body("email").isEmail(),
+  body("password").isStrongPassword(),
+];

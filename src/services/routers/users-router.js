@@ -1,13 +1,12 @@
 import express from "express";
+import { validationResult } from "express-validator/src/validation-result.js";
 import createError from "http-errors";
 import { JWTAuthMiddleware } from "../../auth/JWTMiddleware.js";
 import { generateAccessToken } from "../../auth/tools.js";
-import { validationResult } from "express-validator/src/validation-result.js";
-import { addDoc, collection, doc, setDoc } from "firebase/firestore";
-import { database } from "../../../config.js";
-import UserModel from "../models/user-model.js";
-import { firestoreContactValidation } from "../../middlewares/validations.js";
 import createHttpError from "http-errors";
+import { database } from "../../../config.js";
+import { firestoreContactValidation } from "../../middlewares/validations.js";
+import UserModel from "../models/user-model.js";
 
 const usersRouter = express.Router();
 
@@ -117,31 +116,46 @@ usersRouter.post(
         const user = await UserModel.findById(req.user._id);
         if (user) {
           //If user exists in mongo  -> add contact to collection in firestore
-          //ToDo - add check to see if collection / document exists in Firestore
+          //Check to see if collection / document exists in Firestore
+          const checkMyCollection = await database
+            .collection(req.user._id)
+            .get();
+          //console.log("My collection: ", checkMyCollection._size);
 
-          //method used w/o admin SKD:
-          // const { id } = await addDoc(
-          //   collection(database, req.user._id),
-          //   req.body
-          // );
+          if (checkMyCollection._size > 0) {
+            //proceed only if collection with my id exists in firestore
 
-          //method used with admin SKD: https://retool.com/blog/crud-with-cloud-firestore-using-the-nodejs-sdk/
-          const myCollection = database.collection(req.user._id);
+            //method used w/o admin SKD:
+            // const { id } = await addDoc(
+            //   collection(database, req.user._id),
+            //   req.body
+            // );
 
-          const newContact = {
-            firstName: req.body.firstName, //required field
-            lastName: req.body.lastName ? req.body.lastName : null,
-            phoneNumber: req.body.phoneNumber ? req.body.phoneNumber : null,
-            email: req.body.email ? req.body.email : null,
-            address: req.body.address ? req.body.address : null,
-            userId: req.user._id, //this is coming from jwt middleware
-          };
+            //method used with admin SKD: https://retool.com/blog/crud-with-cloud-firestore-using-the-nodejs-sdk/
+            const myCollection = database.collection(req.user._id);
 
-          await myCollection.doc().set(newContact);
+            const newContact = {
+              firstName: req.body.firstName, //required field
+              lastName: req.body.lastName ? req.body.lastName : null,
+              phoneNumber: req.body.phoneNumber ? req.body.phoneNumber : null,
+              email: req.body.email ? req.body.email : null,
+              address: req.body.address ? req.body.address : null,
+              userId: req.user._id, //this is coming from jwt middleware
+            };
 
-          res.status(201).send({
-            msg: `Contact has been added to the contact list`,
-          });
+            await myCollection.doc().set(newContact);
+
+            res.status(201).send({
+              msg: `Contact has been added to the contact list`,
+            });
+          } else {
+            next(
+              createError(
+                401,
+                `Collection ${req.user._id} not found! Cannot save the contact`
+              )
+            );
+          }
         } else {
           next(createError(401, `User with id ${req.user._id} not found!`));
         }

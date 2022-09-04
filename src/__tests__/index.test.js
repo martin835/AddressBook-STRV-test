@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 import supertest from "supertest";
 import app from "../app.js";
 import { generateAccessToken } from "../auth/tools";
+//import { database } from "../../../config.js";
 
 dotenv.config();
 
@@ -110,8 +111,8 @@ describe("Testing the enviroment", () => {
   });
 
   let newContact = {
-    firstName: "Jane",
-    lastName: "Doe",
+    firstName: "TEST",
+    lastName: "TEST2",
     phoneNumber: "+421515135132",
     address: "42 Lexington Ave, NY, NY",
     extra: "I should not pass into DB",
@@ -128,5 +129,18 @@ describe("Testing the enviroment", () => {
       .send(newContact);
 
     expect(response.status).toBe(201);
+  });
+
+  it("Should return 401 when trying to save contact into firestore for user that doesn't exist", async () => {
+    const validToken = await generateAccessToken({
+      _id: new mongoose.Types.ObjectId(),
+    });
+
+    const response = await client
+      .post("/users/me/add-contact")
+      .set("Authorization", `Bearer ${validToken}`)
+      .send(newContact);
+
+    expect(response.status).toBe(401);
   });
 });

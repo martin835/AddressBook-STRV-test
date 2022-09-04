@@ -6,10 +6,14 @@ import { initializeApp, applicationDefault, cert } from "firebase-admin/app";
 
 //For default creadentials this env varialbe was needed GOOGLE_APPLICATION_CREDENTIALS="C:PATH-TO\key.json" together with key.JSON file,
 //but it probably wouldn't work on Heroku
+
+//USE WHEN TESTING:
+
 const app = initializeApp({
   credential: applicationDefault(),
 });
 
+//WHEN TESTING - COMMENT OUT:
 // const app = initializeApp({
 //   credential: cert({
 //     projectId: process.env.FIREBASE_PROJECT_ID,

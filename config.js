@@ -9,18 +9,18 @@ import { initializeApp, applicationDefault, cert } from "firebase-admin/app";
 
 //USE WHEN TESTING:
 
-const app = initializeApp({
-  credential: applicationDefault(),
-});
+// const app = initializeApp({
+//   credential: applicationDefault(),
+// });
 
 //WHEN TESTING - COMMENT OUT:
-// const app = initializeApp({
-//   credential: cert({
-//     projectId: process.env.FIREBASE_PROJECT_ID,
-//     clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-//     privateKey: process.env.FIREBASE_PRIVATE_KEY,
-//   }),
-// });
+const app = initializeApp({
+  credential: cert({
+    projectId: process.env.FIREBASE_PROJECT_ID,
+    clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+    privateKey: process.env.FIREBASE_PRIVATE_KEY,
+  }),
+});
 
 export const database = getFirestore(app);
 

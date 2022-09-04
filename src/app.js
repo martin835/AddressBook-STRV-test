@@ -1,8 +1,8 @@
 import cors from "cors";
 import express from "express";
 import usersRouter from "./services/routers/users-router.js";
-
 import morgan from "morgan";
+import swaggerUI from "swagger-ui-express";
 import {
   badRequestHandler,
   forbiddenHandler,
@@ -10,11 +10,11 @@ import {
   notFoundHandler,
   unauthorizedHandler,
 } from "./errorHandlers.js";
+import { specs } from "./tools/doc.js";
 
 const app = express();
 
 //***********************************Middlewares*******************************************************/
-//passport.use("google", googleStrategy);
 
 // const whitelist = [
 //   process.env.FE_DEV_URL,
@@ -23,9 +23,7 @@ const app = express();
 // ];
 
 app.use(cors());
-
 app.use(express.json());
-//app.use(passport.initialize());
 app.use(morgan("combined"));
 
 //***********************************Endpoints*********************************************************/
@@ -33,10 +31,12 @@ app.use(morgan("combined"));
 app.use("/users", usersRouter);
 
 // For test purposes
-
 app.get("/test", (req, res) => {
   res.send({ message: "Hello, World!" });
 });
+
+//For generating documentation
+app.use("/api-docs", swaggerUI.serve, swaggerUI.setup(specs));
 
 //***********************************Error handlers****************************************************/
 

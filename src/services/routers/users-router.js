@@ -13,30 +13,75 @@ import UserModel from "../models/user-model.js";
 
 const usersRouter = express.Router();
 
-//Endpoint only for testing purposes - delete in prod.
-// usersRouter.get("/", async (req, res, next) => {
-//   console.log("📨 PING - GET REQUEST");
-//   try {
-//     const users = await UserModel.find({});
+/**
+ * @swagger
+ * components:
+ *  schemas:
+ *   User:
+ *      type: object
+ *      required:
+ *          - email
+ *          - password
+ *      properties:
+ *          email:
+ *              type: string
+ *              description: User's email for registration. Must be unique in the DB
+ *          password:
+ *              type: string
+ *              description: Provide strong password. minLength is 8, minLowercase is 1, minUppercase is 1, minNumbers is 1, minSymbols is 1
+ *          name:
+ *              type: string
+ *              description: Optional - user's first name.
+ *          surname:
+ *              type: string
+ *              description: Optional - user's surname.
+ *          _id:
+ *              type: string
+ *              description: The auto-generated id
+ *      example:
+ *          email: new@gmail.com
+ *          password: 1234@%%SFD23ff5
+ *          name: John
+ *          surname: Doe
+ */
 
-//     res.send(users);
-//   } catch (error) {
-//     next(error);
-//   }
-// });
-
-//TEST Creating new user
-// usersRouter.post("/", async (req, res, next) => {
-//   try {
-//     //1. Create new user in MongoDB
-//     const newUser = new UserModel(req.body);
-//     const { _id } = await newUser.save();
-
-//     res.status(201).send({ _id });
-//   } catch (error) {
-//     next(error);
-//   }
-// });
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     Contact:
+ *       type: object
+ *       required:
+ *         - firstName
+ *       properties:
+ *         firstName:
+ *           type: string
+ *           description: First name of the contact
+ *         lastName:
+ *           type: string
+ *           description: Surname name of the contact
+ *         email:
+ *           type: string
+ *           description: The email address of the contact
+ *         address:
+ *           type: string
+ *           description: The address of the contact
+ *         phoneNumber:
+ *           type: string
+ *           description: The phone number of the contact
+ *         id:
+ *           type: string
+ *           description: The auto-generated id of the contact
+ *         userId:
+ *           type: string
+ *           description: The auto-generated id of the user who added the contact
+ *       example:
+ *           phoneNumber: 123325325234,
+ *           firstName: Jane,
+ *           lastName : Test2,
+ *           email: sadare@sdasd.com,
+ *           address: 42 Lexington Ave, NY, NY
+ */
 
 usersRouter.get("/me", JWTAuthMiddleware, async (req, res, next) => {
   try {
@@ -72,6 +117,54 @@ usersRouter.post("/login", async (req, res, next) => {
     next(error);
   }
 });
+
+/**
+ * @swagger
+ * /users/register:
+ *   post:
+ *     description: Register a new user
+ *     tags: [Users]
+ *     produces:
+ *       - application/json
+ *     requestBody:
+ *         description: Save a new user in the DB. Email must be unique.
+ *         required: true
+ *         content:
+ *              application/json:
+ *                  schema:
+ *                      $ref: '#/components/schemas/User'
+ *     responses:
+ *       201:
+ *         description: New user created in the DB.
+ *         content:
+ *            object:
+ *              schema:
+ *                 properties:
+ *                     accessToken:
+ *                      type: string
+ *                      description: jwt token
+ *                     _id:
+ *                      type: string
+ *                      description: unique user's id
+ *       400:
+ *          description: Something is wrong with the req body. Probably input validation error. Check errors list object.
+ *          content:
+ *            object:
+ *              schema:
+ *                 properties:
+ *                     message:
+ *                      type: string
+ *                      description: Error message
+ *       500:
+ *          description: Generic server error
+ *          content:
+ *            object:
+ *              schema:
+ *                 properties:
+ *                     message:
+ *                      type: string
+ *                      description: Error message
+ */
 
 usersRouter.post("/register", newUserValidation, async (req, res, next) => {
   //console.log(req.body);

@@ -44,7 +44,7 @@ describe("Testing the enviroment", () => {
     surname: "Doe",
     email: "john.doe@gmail.com",
     phoneNumber: "+431213125324",
-    password: "1234asdf",
+    password: "11234@%%SFD23ff5@",
   };
 
   //ID is set when registering a new user and used in other login / verify tests
@@ -61,7 +61,7 @@ describe("Testing the enviroment", () => {
   it("Should login a user with valid email and password", async () => {
     const response = await client
       .post("/users/login")
-      .send({ email: "john.doe@gmail.com", password: "1234asdf" });
+      .send({ email: "john.doe@gmail.com", password: "11234@%%SFD23ff5@" });
 
     expect(response.status).toBe(200);
     expect(response.body.accessToken).toBeDefined();
@@ -70,7 +70,7 @@ describe("Testing the enviroment", () => {
   it("Should NOT login a user with invalid password", async () => {
     const response = await client
       .post("/users/login")
-      .send({ email: "john.doe@gmail.com", password: "badpa$$word" });
+      .send({ email: "john.doe@gmail.com", password: "baFS1323dpa$$word" });
 
     expect(response.status).toBe(401);
     expect(response.body.message).toBeDefined();

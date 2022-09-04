@@ -5,7 +5,10 @@ import { JWTAuthMiddleware } from "../../auth/JWTMiddleware.js";
 import { generateAccessToken } from "../../auth/tools.js";
 import createHttpError from "http-errors";
 import { database } from "../../../config.js";
-import { firestoreContactValidation } from "../../middlewares/validations.js";
+import {
+  firestoreContactValidation,
+  newUserValidation,
+} from "../../middlewares/validations.js";
 import UserModel from "../models/user-model.js";
 
 const usersRouter = express.Router();
@@ -70,35 +73,45 @@ usersRouter.post("/login", async (req, res, next) => {
   }
 });
 
-usersRouter.post("/register", async (req, res, next) => {
+usersRouter.post("/register", newUserValidation, async (req, res, next) => {
   //console.log(req.body);
   try {
-    //1 - create a new user in DB
-    const newUser = new UserModel({
-      ...req.body,
-    });
+    const errorsList = validationResult(req);
 
-    const { _id, email, name } = await newUser.save();
-    // 2. Generate access token
-    // KEYS _id and role are send as a payload to `generateAcccessToken function, that...
-    //.. creates a JWT token out of it.
-    //VALUES _id and role are retrieved from user in the DB
-    const accessToken = await generateAccessToken({
-      _id: _id,
-    });
+    if (errorsList.isEmpty()) {
+      //1 - create a new user in DB
+      const newUser = new UserModel({
+        ...req.body,
+      });
 
-    //3. Create collection  with user's ID in Firebase and document "contacts" -> it will be initially empty contact list
-    const userId = _id.toString();
+      const { _id, email, name } = await newUser.save();
+      // 2. Generate access token
+      // KEYS _id and role are send as a payload to `generateAcccessToken function, that...
+      //.. creates a JWT token out of it.
+      //VALUES _id and role are retrieved from user in the DB
+      const accessToken = await generateAccessToken({
+        _id: _id,
+      });
 
-    //method used w/o admin SKD:
-    //await setDoc(doc(database, userId, userId), {});
-    //method used with admin SKD:  https://retool.com/blog/crud-with-cloud-firestore-using-the-nodejs-sdk/
-    const newCollection = database.collection(userId);
-    const newDocument = newCollection.doc(userId);
-    await newDocument.set({});
+      //3. Create collection  with user's ID in Firebase and document "contacts" -> it will be initially empty contact list
+      const userId = _id.toString();
 
-    // 4. Send access token and _id in the response
-    res.status(201).send({ accessToken, _id });
+      //method used w/o admin SKD:
+      //await setDoc(doc(database, userId, userId), {});
+      //method used with admin SKD:  https://retool.com/blog/crud-with-cloud-firestore-using-the-nodejs-sdk/
+      const newCollection = database.collection(userId);
+      const newDocument = newCollection.doc(userId);
+      await newDocument.set({});
+
+      // 4. Send access token and _id in the response
+      res.status(201).send({ accessToken, _id });
+    } else {
+      next(
+        createHttpError(400, "Something wrong is with the request body", {
+          errorsList,
+        })
+      );
+    }
   } catch (error) {
     next(error);
   }

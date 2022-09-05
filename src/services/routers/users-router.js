@@ -105,11 +105,24 @@ const usersRouter = express.Router();
  *     security:
  *       - Bearer: []
  *     responses:
- *       201:
- *         description: New user created in the DB.
+ *       200:
+ *         description: OK - returning user's information
  *         content:
  *            object:
- *              $ref: '#/components/schemas/User'
+ *              schema:
+ *                 properties:
+ *                     email:
+ *                      type: string
+ *                      description: User's email
+ *                     _id:
+ *                      type: string
+ *                      description: User's id
+ *                     name:
+ *                      type: string
+ *                      description: User's name - if provided
+ *                     surname:
+ *                      type: string
+ *                      description: User's surname - if provided
  *       401:
  *          description: User has not been found by provided token.
  *          content:

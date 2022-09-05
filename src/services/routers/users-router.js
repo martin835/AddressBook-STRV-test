@@ -83,6 +83,50 @@ const usersRouter = express.Router();
  *           address: 42 Lexington Ave, NY, NY
  */
 
+/**
+ * @swagger
+ * components:
+ *  securitySchemes:
+ *   Bearer:
+ *     type: apiKey
+ *     in: header
+ *     name: authentication
+ *     bearerFormat: JWT
+ */
+
+/**
+ * @swagger
+ * /users/me:
+ *   get:
+ *     description: Log's user in if valid token is provided
+ *     tags: [Users]
+ *     produces:
+ *       - application/json
+ *     security:
+ *       - Bearer: []
+ *     responses:
+ *       201:
+ *         description: New user created in the DB.
+ *         content:
+ *            object:
+ *              $ref: '#/components/schemas/User'
+ *       401:
+ *          description: User has not been found by provided token.
+ *          content:
+ *             text/plain:
+ *                  schema:
+ *                      type: string
+ *                      example: User with id 234ghvf08d028vh20fv not found!
+ *       500:
+ *          description: Generic server error
+ *          content:
+ *            object:
+ *              schema:
+ *                 properties:
+ *                     message:
+ *                      type: string
+ *                      description: Error message
+ */
 usersRouter.get("/me", JWTAuthMiddleware, async (req, res, next) => {
   try {
     const user = await UserModel.findById(req.user._id);
@@ -95,6 +139,57 @@ usersRouter.get("/me", JWTAuthMiddleware, async (req, res, next) => {
     next(error);
   }
 });
+
+/**
+ * @swagger
+ * /users/login:
+ *   post:
+ *     description: Login an existing user
+ *     tags: [Users]
+ *     produces:
+ *       - application/json
+ *     requestBody:
+ *         description: Checks if provided email is in the database and checks if provided password is correct.
+ *         required: true
+ *         content:
+ *              application/json:
+ *                  schema:
+ *                     properties:
+ *                        email:
+ *                          type: string
+ *                          description: User's valid email.
+ *                        password:
+ *                          type: string
+ *                          description: User's valid password.
+ *     responses:
+ *       200:
+ *         description: User successfully logged in.
+ *         content:
+ *            object:
+ *              schema:
+ *                 properties:
+ *                     accessToken:
+ *                      type: string
+ *                      description: jwt token
+ *       401:
+ *          description: Wrong credentials provided.
+ *          content:
+ *            object:
+ *              schema:
+ *                 properties:
+ *                     message:
+ *                      type: string
+ *                      description: Error message
+ *       500:
+ *          description: Generic server error
+ *          content:
+ *            object:
+ *              schema:
+ *                 properties:
+ *                     message:
+ *                      type: string
+ *                      description: Error message
+ */
 
 usersRouter.post("/login", async (req, res, next) => {
   //console.log(req.body);
@@ -210,6 +305,53 @@ usersRouter.post("/register", newUserValidation, async (req, res, next) => {
   }
 });
 
+/**
+ * @swagger
+ * /users/me/add-contact:
+ *   post:
+ *     description: Creates new contact in user's collection of contacts in Firestore.
+ *     tags: [Users]
+ *     produces:
+ *       - application/json
+ *     security:
+ *       - Bearer: []
+ *     requestBody:
+ *         description: Save a new contact in the DB. userId is extracted from jwt token.
+ *         required: true
+ *         content:
+ *              application/json:
+ *                  schema:
+ *                      $ref: '#/components/schemas/Contact'
+ *     responses:
+ *       201:
+ *         description: New user created in the DB.
+ *         content:
+ *            object:
+ *              schema:
+ *                 properties:
+ *                     message:
+ *                      type: string
+ *                      description: Contact has been added to the contact list
+ *       401:
+ *          description: Either user or user's collection of contacts has not been found by user's id.
+ *          content:
+ *            object:
+ *              schema:
+ *                 properties:
+ *                     message:
+ *                      type: string
+ *                      description: Error message
+ *       500:
+ *          description: Generic server error
+ *          content:
+ *            object:
+ *              schema:
+ *                 properties:
+ *                     message:
+ *                      type: string
+ *                      description: Error message
+ */
+
 usersRouter.post(
   "/me/add-contact",
   JWTAuthMiddleware,
@@ -252,7 +394,7 @@ usersRouter.post(
             await myCollection.doc().set(newContact);
 
             res.status(201).send({
-              msg: `Contact has been added to the contact list`,
+              message: `Contact has been added to the contact list`,
             });
           } else {
             next(

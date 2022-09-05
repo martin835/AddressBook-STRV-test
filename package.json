@@ -31,7 +31,9 @@
     "jsonwebtoken": "^8.5.1",
     "mongoose": "^6.5.4",
     "morgan": "^1.10.0",
-    "query-to-mongo": "^0.10.2"
+    "query-to-mongo": "^0.10.2",
+    "swagger-jsdoc": "^6.2.5",
+    "swagger-ui-express": "^4.5.0"
   },
   "devDependencies": {
     "cross-env": "^7.0.3",

@@ -2,7 +2,6 @@ import listEndpoints from "express-list-endpoints";
 import mongoose from "mongoose";
 import app from "./app.js";
 import { createServer } from "http";
-//import { verifyAccessToken } from "./auth/tools.js";
 
 // Server connection
 

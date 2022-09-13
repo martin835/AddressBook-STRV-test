@@ -29,7 +29,7 @@ export const generateAccessToken = (payload) =>
 export const verifyAccessToken = (token) =>
   new Promise((resolve, reject) =>
     jwt.verify(token, process.env.JWT_SECRET, (err, payload) => {
-      if (err) reject(err);
+      if (err) reject(err.name);
       else resolve(payload);
     })
   );

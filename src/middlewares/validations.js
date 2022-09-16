@@ -25,15 +25,23 @@ export const newUserValidation = [
     .withMessage("Email is a mandatory field")
     .custom((value, { req }) => {
       return new Promise((resolve, reject) => {
-        UserModel.findOne({ email: req.body.email }, function (err, user) {
-          if (err) {
-            reject(new Error("Server Error"));
+        UserModel.findOne(
+          { email: req.body.email.toLowerCase() },
+          function (err, user) {
+            if (err) {
+              reject(new Error("Server Error"));
+            }
+            if (Boolean(user)) {
+              reject(new Error("This e-mail is already registered."));
+            }
+            resolve(true);
           }
-          if (Boolean(user)) {
-            reject(new Error("This e-mail is already registered."));
-          }
-          resolve(true);
-        });
+        );
       });
     }),
+];
+
+export const loginValidation = [
+  body("password").exists().withMessage("Password is a mandatory field."),
+  body("email").exists().isEmail().withMessage("Email is a mandatory field"),
 ];

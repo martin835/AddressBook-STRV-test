@@ -7,6 +7,7 @@ import createHttpError from "http-errors";
 import { database } from "../../../config.js";
 import {
   firestoreContactValidation,
+  loginValidation,
   newUserValidation,
 } from "../../middlewares/validations.js";
 import UserModel from "../models/user-model.js";
@@ -204,22 +205,32 @@ usersRouter.get("/me", JWTAuthMiddleware, async (req, res, next) => {
  *                      description: Error message
  */
 
-usersRouter.post("/login", async (req, res, next) => {
+usersRouter.post("/login", loginValidation, async (req, res, next) => {
   //console.log(req.body);
   try {
-    //1. Obtain credentials from req.body
-    const { email, password } = req.body;
+    const errorsList = validationResult(req);
 
-    //2. Verify credentials
-    const user = await UserModel.checkCredentials(email, password);
-    //console.log(user);
-    if (user) {
-      const accessToken = await generateAccessToken({
-        _id: user._id,
-      });
-      res.send({ accessToken });
+    if (errorsList.isEmpty()) {
+      //1. Obtain credentials from req.body
+      const { email, password } = req.body;
+
+      //2. Verify credentials
+      const user = await UserModel.checkCredentials(email, password);
+      //console.log(user);
+      if (user) {
+        const accessToken = await generateAccessToken({
+          _id: user._id,
+        });
+        res.send({ accessToken });
+      } else {
+        next(createError(401, `Wrong login / registration credentials!`));
+      }
     } else {
-      next(createError(401, `Wrong login / registration credentials!`));
+      next(
+        createHttpError(400, "Something wrong is with the request body", {
+          errorsList,
+        })
+      );
     }
   } catch (error) {
     next(error);
@@ -281,9 +292,15 @@ usersRouter.post("/register", newUserValidation, async (req, res, next) => {
 
     if (errorsList.isEmpty()) {
       //1 - create a new user in DB
-      const newUser = new UserModel({
-        ...req.body,
-      });
+
+      const newUserToDB = {
+        name: req.body.name ? req.body.name : null,
+        surname: req.body.surname ? req.body.surname : null,
+        email: req.body.email ? req.body.email.toLowerCase() : null,
+        password: req.body.password ? req.body.password : null,
+      };
+
+      const newUser = new UserModel(newUserToDB);
 
       const { _id, email, name } = await newUser.save();
       // 2. Generate access token
@@ -320,7 +337,7 @@ usersRouter.post("/register", newUserValidation, async (req, res, next) => {
 
 /**
  * @swagger
- * /users/me/add-contact:
+ * /users/contact:
  *   post:
  *     description: Creates new contact in user's collection of contacts in Firestore.
  *     tags: [Users]
@@ -366,7 +383,7 @@ usersRouter.post("/register", newUserValidation, async (req, res, next) => {
  */
 
 usersRouter.post(
-  "/me/add-contact",
+  "/contact",
   JWTAuthMiddleware,
   firestoreContactValidation,
   async (req, res, next) => {
